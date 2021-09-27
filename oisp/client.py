@@ -52,8 +52,6 @@ class AuthenticationError(Exception):
 
     """
 
-    pass
-
 
 class OICException(Exception):
     """Exception for cases when an error code is returned from the server."""
@@ -163,7 +161,7 @@ class OICException(Exception):
         super(OICException, self).__init__(message)
 
 
-class Client(object):
+class Client:
     """IoT Analytics Cloud client class.
 
     Attributes:   proxies (str): proxy server used for connection
@@ -330,7 +328,7 @@ class Client(object):
         is bound to.
         fetch_info (boolean): whether to fetch device information.
         """
-        fetch_info = fetch_info
+
         headers = self.get_headers(authorize=False)
         headers["Authorization"] = "Bearer " + device_token
 

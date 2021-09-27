@@ -35,7 +35,7 @@ from oisp.utils import (camel_to_underscore, underscore_to_camel,
 
 # pylint: disable=too-many-instance-attributes
 # The attributes match those defined in the REST API
-class Device(object):
+class Device:
     """Class managing device activation, components, and attributes.
 
     To find or filter devices connected to an account, refer to the
@@ -278,8 +278,8 @@ class Device(object):
             raise Warning("""Submitting data without account token is """
                           """currently not supported.""")
         # Otherwise we need to use the alternative /data/.* URL
-        else:
-            url = "/data/{}".format(self.device_id)
+
+        url = "/data/{}".format(self.device_id)
 
         self.client.post(url, data=payload, authorize_as=self.auth_as,
                          expect=201)

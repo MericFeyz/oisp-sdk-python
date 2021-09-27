@@ -31,11 +31,11 @@ PROJECT_NAME ?= "oisp"
 USERNAME = "testuser"
 PASSWORD = "P@ssw0rd"
 ROLE = "admin"
-
+POD_NAME=$(shell kubectl -n ${PROJECT_NAME} get pods | grep "frontend" | cut -f 1 -d " ")
 
 test: lint-light reset-db
 	@$(call msg,"Starting Integrity Tests ...")
-	virtualenv --no-site-packages venv_test;
+	virtualenv venv_test;
 	( . venv_test/bin/activate; \
 	pip install coverage; \
 	coverage run --source oisp setup.py test; \
@@ -69,7 +69,7 @@ install: .install
 
 reset-db:
 	@$(call msg,"Resetting database ...");
-	docker exec -it $(PROJECT_NAME)_frontend_1 node /app/admin resetDB;
+	$(shell kubectl -n ${PROJECT_NAME} exec -it $(POD_NAME) /app/admin  resetDB)
 
 enter-debug: .install
 	cd samples && python enter_pdb.py;
