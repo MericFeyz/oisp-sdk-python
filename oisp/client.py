@@ -327,8 +327,8 @@ class Client:
         this is the same as the account_id of the account the device
         is bound to.
         fetch_info (boolean): whether to fetch device information.
-        """
 
+        """
         headers = self.get_headers(authorize=False)
         headers["Authorization"] = "Bearer " + device_token
 

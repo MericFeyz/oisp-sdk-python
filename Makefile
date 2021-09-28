@@ -38,7 +38,7 @@ test: lint-light reset-db
 	virtualenv venv_test;
 	( . venv_test/bin/activate; \
 	pip install coverage; \
-	coverage run --source oisp setup.py test; \
+	coverage run --source=oisp setup.py test; \
 	)
 	coverage report -m
 
@@ -69,7 +69,7 @@ install: .install
 
 reset-db:
 	@$(call msg,"Resetting database ...");
-	$(shell kubectl -n ${PROJECT_NAME} exec -it $(POD_NAME) /app/admin  resetDB)
+	kubectl -n ${PROJECT_NAME} exec -it ${POD_NAME} -- node /app/admin  resetDB
 
 enter-debug: .install
 	cd samples && python enter_pdb.py;
