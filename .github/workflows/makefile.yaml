@@ -16,19 +16,6 @@ jobs:
       with:
         ref: ${{ github.ref }}
 
-    - name: Check if the last commit is signed
-      shell: bash
-      run: |
-        export TERM=vt100
-        MESSAGE=`git log -1 --pretty=%B`
-        echo "Checking whether signed"
-        if [[ "${MESSAGE}" == *Signed-off-by:*@* ]]; then
-          echo "Commit is signedoff"
-        else
-          echo "Commit is not signedoff"
-          exit 1
-        fi
-
     - name: Set up SDK
       shell: bash
       run: |
