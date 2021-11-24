@@ -61,6 +61,7 @@ jobs:
         export TERM=vt100
         cd platform-launcher/util && \
         bash setup-ubuntu20.04.sh
+        
     - name: Build and deploy Platform Launcer
       shell: bash
       run: |
