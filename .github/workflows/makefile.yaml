@@ -28,19 +28,19 @@ jobs:
           echo "Commit is not signedoff"
           exit 1
         fi
-	
+
     - name: Set up SDK
       shell: bash
       run: |
         export TERM=vt100
-	sudo python3 setup.py install
+        sudo python3 setup.py install
         sudo pip3 install pylint pycodestyle pydocstyle
-	
+        
     - name: Run Linter
       shell: bash
       run: |
         export TERM=vt100
-	pylint oisp --score=n --disable=c0209 || exit 1
+        pylint oisp --score=n --disable=c0209 || exit 1
         pycodestyle oisp || exit 1
         pycodestyle test || exit 1
         pydocstyle oisp --add-ignore=D105 || exit 1
@@ -49,10 +49,10 @@ jobs:
       shell: bash
       run: |
         export TERM=vt100
-	git clone https://github.com/Open-IoT-Service-Platform/platform-launcher.git
+        git clone https://github.com/Open-IoT-Service-Platform/platform-launcher.git
         cd platform-launcher
         git checkout develop
-	git submodule update --recursive --init
+        git submodule update --recursive --init
         yes | make update
 
     - name: Set up Platform Launcher
@@ -66,9 +66,9 @@ jobs:
       run: |
         set +e
         export TERM=vt100
-	cd platform-launcher
+        cd platform-launcher
         yes | DOCKER_TAG=test NODOCKERLOGIN=true DEBUG=true make build
-	export PATH=$PATH:/snap/bin
+        export PATH=$PATH:/snap/bin
         make import-images DOCKER_TAG=test DEBUG=true
         docker image prune -a -f
         rm -rf oisp-*
@@ -83,12 +83,11 @@ jobs:
           make test
           retval=$?
         done
-	FRONTEND_POD=$(kubectl -n oisp get pods | grep frontend | cut -f 1 -d " ")
+        FRONTEND_POD=$(kubectl -n oisp get pods | grep frontend | cut -f 1 -d " ")
         kubectl -n oisp port-forward ${FRONTEND_POD} 4001:4001 &
 
     - name: SDK E2E Test
       shell: bash
       run: |
         export TERM=vt100
-	make test
-	
+        make test
