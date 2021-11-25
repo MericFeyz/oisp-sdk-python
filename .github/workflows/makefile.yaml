@@ -21,7 +21,7 @@ jobs:
       run: |
         export TERM=vt100
         sudo python3 setup.py install
-        sudo pip3 install pylint pycodestyle pydocstyle virtualenv coverage
+        pip3 install pylint pycodestyle pydocstyle virtualenv coverage
         
     - name: Run Linter
       shell: bash
