@@ -36,6 +36,7 @@ jobs:
       shell: bash
       run: |
         export TERM=vt100
+        set +o pipefail
         git clone https://github.com/Open-IoT-Service-Platform/platform-launcher.git
         cd platform-launcher
         git checkout develop
@@ -53,6 +54,7 @@ jobs:
       shell: bash
       run: |
         set +e
+        set +o pipefail
         export TERM=vt100
         cd platform-launcher
         yes | DOCKER_TAG=test NODOCKERLOGIN=true DEBUG=true make build
