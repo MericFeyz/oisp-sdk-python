@@ -50,13 +50,13 @@ format-files: .install-deps
 
 lint-light:
 	@$(call msg,"Running linters (light) ...");
-	pylint --disable=fixme --score=n oisp
+	pylint --disable=fixme --disable=c0209 --score=n oisp
 	pycodestyle oisp
 	pycodestyle test
 
 lint:
 	@$(call msg,"Running linters (full) ...");
-	pylint oisp --score=n
+	pylint oisp --disable=c0209 --score=n
 	pycodestyle oisp
 	pycodestyle test
 	pydocstyle oisp --add-ignore=D105
