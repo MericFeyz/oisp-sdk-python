@@ -80,4 +80,5 @@ jobs:
       shell: bash
       run: |
         export TERM=vt100
+        sudo chmod -R .
         make test
