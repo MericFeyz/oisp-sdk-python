@@ -79,5 +79,11 @@ jobs:
     - name: SDK E2E Test
       shell: bash
       run: |
+        set +e
         export TERM=vt100
-        make test
+        sudo chmod -R 777 .
+        retval=2;
+        until [ ${retval} -eq 0 ]; do
+          make test
+          retval=$?
+        done
