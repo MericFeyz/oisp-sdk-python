@@ -28,7 +28,10 @@
 
 import json
 import logging
-
+try:
+    from simplejson.errors import JSONDecodeError
+except ImportError:
+    from json.decoder import JSONDecodeError
 import cbor
 import requests
 from termcolor import colored
@@ -158,7 +161,7 @@ class OICException(Exception):
                                     separators=(',', ': '))
                 message += "\nError message: {}".format(pretty)
                 self.code = resp_json.get("code")
-        except json.JSONDecodeError:
+        except JSONDecodeError:
             message += "\nResponse: {}".format(resp.content)
         super().__init__(message)
 
