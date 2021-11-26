@@ -3,10 +3,11 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2.1
+executors:
   vm-executor:
     machine:
       enabled: true
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202104-01
     working_directory: ~/repo
     environment:
       shell: /bin/bash
@@ -14,24 +15,80 @@ version: 2.1
       TZ: "Europe/Berlin"
   docker-executor:
     docker:
-      - image: circleci/node:10.0
+      - image: circleci/node:14.17.1
     working_directory: ~/repo
     environment:
       shell: /bin/bash
       TERM: xterm
-
 commands:
   install-sdk:
     description: "Install sdk and required testing tools."
     steps:
       - run:
-        command: |
-          sudo python3 setup.py install
-          sudo pip3 install pylint pycodestyle pydocstyle
+          command: |
+            sudo python3 setup.py install
+            sudo pip3 install pylint pycodestyle pydocstyle
+
+  checkout-platform-launcher:
+    description: "Checkout Platform Launcher"
+    steps:
+      - run:
+          name: Checkout Platform Launcher
+          shell: /bin/bash
+          command: |
+            git clone https://github.com/Open-IoT-Service-Platform/platform-launcher.git
+            cd platform-launcher
+            git checkout develop
+            git submodule init
+            git submodule update
+            yes | make update
+  setup-platform-launcher:
+    description: "Setup Platform Launcher"
+    steps:
+      - run:
+          shell: /bin/bash
+          name: Setup build environment
+          command: |
+            cd platform-launcher/util && \
+            bash setup-ubuntu20.04.sh
+            # create 8GB swap
+            sudo dd if=/dev/zero of=/swapfile bs=1M count=8000
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+  prepare-platform-launcher:
+    description: "Pull images, build, deploy and port forward the platform launcher"
+    steps:
+      - run:
+          shell: /bin/bash
+          name: Pull images, build, deploy and port forward the platform launcher 
+          command: |
+            cd platform-launcher
+            if docker login  -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD};
+            then
+                DOCKER_TAG="latest" docker-compose pull
+            else
+                echo "Docker Credentials are wrong."
+                exit 1
+            fi
+            make build DEBUG=true DOCKERUSER=${DOCKER_USERNAME} DOCKERPASS=${DOCKER_PASSWORD}
+            make import-images DEBUG=true USE_LOCAL_REGISTRY=true
+            export NODOCKERLOGIN=true
+            retval=2;
+            until [ ${retval} -eq 0 ]; do
+              make undeploy-oisp
+              (for i in {1..20}; do sleep 60; echo .; done&) &&  make deploy-oisp-test  USE_LOCAL_REGISTRY=true
+              make test
+              retval=$?
+            done
+            FRONTEND_POD=$(kubectl -n oisp get pods | grep frontend | cut -f 1 -d " ")
+            kubectl -n oisp port-forward ${FRONTEND_POD} 4001:4001
+          no_output_timeout: 20m
+            
   check-signed:
     description: "Check whether latest commit is signed"
     steps:
       - run:
+          shell: /bin/bash
           name: Check whether most recent commit is signed
           command: |
             MESSAGE=`git log -1 --pretty=%B`
@@ -46,21 +103,37 @@ commands:
     description: "Run linters for code and comments."
     steps:
       - run:
-        command: |
-          pylint oisp --score=n || exit 1
-          pycodestyle oisp || exit 1
-          pycodestyle test || exit 1
-          pydocstyle oisp --add-ignore=D105 || exit 1
-
+          shell: /bin/bash
+          command: |
+            pylint oisp --score=n --disable=c0209 || exit 1
+            pycodestyle oisp || exit 1
+            pycodestyle test || exit 1
+            pydocstyle oisp --add-ignore=D105 || exit 1
+          
+  sdk-e2e-test:
+    description: "Run SDK's e2e test"
+    steps:
+      - run:
+          shell: /bin/bash
+          name: Run SDK\'s tests connecting to the hosted platform launcher
+          command: |
+            make test
 jobs:
   e2e-test:
     executor: vm-executor
     steps:
-      - check-signed
+      - checkout
       - install-sdk
       - lint
+      - check-signed
+      - checkout-platform-launcher
+      - setup-platform-launcher
+      - prepare-platform-launcher
+      - sdk-e2e-test
 
 workflows:
+  version: 2.1
   workflow:
     jobs:
       - e2e-test
+
