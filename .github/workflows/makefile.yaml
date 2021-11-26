@@ -79,6 +79,7 @@ jobs:
     - name: SDK E2E Test
       shell: bash
       run: |
+        set +e
         export TERM=vt100
         sudo chmod -R 777 .
         retval=2;
