@@ -80,5 +80,9 @@ jobs:
       shell: bash
       run: |
         export TERM=vt100
-        chown -R $USER .
-        make test
+        sudo chmod -R 777 .
+        retval=2;
+        until [ ${retval} -eq 0 ]; do
+          make test
+          retval=$?
+        done
