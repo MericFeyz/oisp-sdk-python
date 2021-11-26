@@ -80,5 +80,5 @@ jobs:
       shell: bash
       run: |
         export TERM=vt100
-        sudo chmod -R 777 .
+        chown -R $USER .
         make test
